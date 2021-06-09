@@ -68,7 +68,10 @@ cookie is a secure cookie.")
 this cookie is a `HttpOnly' cookie.
 
 This is a Microsoft extension that has been implemented in Firefox as
-well. See <http://msdn2.microsoft.com/en-us/library/ms533046.aspx>."))
+well. See <http://msdn2.microsoft.com/en-us/library/ms533046.aspx>.")
+   (same-site :initarg :same-site 
+              :initform nil 
+              :accessor cookie-same-site))
   (:documentation "Each COOKIE objects describes one outgoing cookie."))
 
 (defmethod initialize-instance :around ((cookie cookie) &rest init-args)
@@ -91,7 +94,7 @@ REPLY object REPLY. If a cookie with the same name
         (push (cons name cookie) (cookies-out reply))
         cookie))))
 
-(defun set-cookie (name &key (value "") expires max-age path domain secure http-only (reply *reply*))
+(defun set-cookie (name &key (value "") expires max-age path (same-site "None") domain secure http-only (reply *reply*))
   "Creates a cookie object from the parameters provided and adds
 it to the outgoing cookies of the REPLY object REPLY. If a cookie
 with the name NAME \(case-sensitive) already exists, it is
@@ -102,6 +105,7 @@ replaced."
                               :expires expires
                               :max-age max-age
                               :path path
+                              :same-site same-site
                               :domain domain
                               :secure secure
                               :http-only http-only)
@@ -116,12 +120,13 @@ replaced."
   "Converts the COOKIE object COOKIE to a string suitable for a
 'Set-Cookie' header to be sent to the client."
   (format nil
-          "~A=~A~@[; Expires=~A~]~@[; Max-Age=~A~]~@[; Domain=~A~]~@[; Path=~A~]~:[~;; Secure~]~:[~;; HttpOnly~]"
+          "~A=~A~@[; Expires=~A~]~@[; Max-Age=~A~]~@[; Domain=~A~]~@[; Path=~A~]~@[; SameSite=~A~]~:[~;; Secure~]~:[~;; HttpOnly~]"
           (cookie-name cookie)
           (cookie-value cookie)
           (cookie-date (cookie-expires cookie))
           (cookie-max-age cookie)
           (cookie-domain cookie)
           (cookie-path cookie)
+          (cookie-same-site cookie)
           (cookie-secure cookie)
           (cookie-http-only cookie)))
